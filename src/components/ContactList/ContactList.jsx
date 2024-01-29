@@ -1,24 +1,43 @@
 import css from './contactList.module.css';
+import { useSelector, useDispatch } from 'react-redux';
+import { removeContact } from '../../redux/contacts/contactsSlice';
 
-const ContactList = ({ contactsArray, contactBtnDeleter }) => {
-  const renderedArray = contactsArray.map(friend => {
-    return (
-      <li key={friend.id} className={css.contactListItem}>
-        <p className={css.contactListText}>
-          {friend.name}: {friend.number}
-        </p>
-        <button
-          type="button"
-          onClick={() => contactBtnDeleter(friend.id)}
-          className={css.contactListBtnDelete}
-        >
-          Delete contact
-        </button>
-      </li>
+const ContactList = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(state => state.contacts.contacts);
+  const filter = useSelector(state => state.contacts.filter);
+
+  const getFilteredContacts = () => {
+    const normalizedFilter = filter.toLowerCase();
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(normalizedFilter)
     );
-  });
+  };
 
-  return <ul className={css.contactList}>{renderedArray}</ul>;
+  const filteredContacts = getFilteredContacts();
+
+  const handleDelete = (contactId) => {
+    dispatch(removeContact(contactId));
+  };
+
+  return (
+    <ul className={css.contactList}>
+      {filteredContacts.map(contact => (
+        <li key={contact.id} className={css.contactListItem}>
+          <p className={css.contactListText}>
+            {contact.name}: {contact.number}
+          </p>
+          <button
+            type="button"
+            onClick={() => handleDelete(contact.id)}
+            className={css.contactListBtnDelete}
+          >
+            Delete contact
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
 };
 
 export { ContactList };

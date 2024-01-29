@@ -1,15 +1,18 @@
 import css from './filter.module.css';
-import { Component } from 'react';
+import { useDispatch } from 'react-redux';
+import { setFilter } from '../../redux/contacts/contactsSlice';
 
-class Filter extends Component {
-  handleChangeListener = event => {
-    const filterValue = event.currentTarget.value;
+const Filter = () => {
+  const dispatch = useDispatch();
+
+ const handleChangeListener = event => {
+    // const filterValue = event.currentTarget.value;
     // console.log(filterValue)
-
-    this.props.handlerChangeFilter(filterValue.trim().toLowerCase()); //передаємо через пропс результат введення користувачем.
+    const filterValue = event.currentTarget.value;
+    dispatch(setFilter(filterValue.trim().toLowerCase()));
   };
 
-  render() {
+
     return (
       <>
         <p className={css.filterText}>Find contact by name</p>
@@ -17,11 +20,11 @@ class Filter extends Component {
           className={css.filterInput}
           type="text"
           name="filter"
-          onChange={this.handleChangeListener}
+          onChange={handleChangeListener}
         />
       </>
     );
   }
-}
+
 
 export { Filter };
