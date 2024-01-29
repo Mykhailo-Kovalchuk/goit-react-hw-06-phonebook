@@ -1,8 +1,15 @@
-import { useState, useEffect } from 'react';
+// import { useState, useEffect } from 'react';
 
 import { ContactForm } from './ContactForm/ContactForm';
 import { Filter } from './Filter/Filter';
 import { ContactList } from './ContactList/ContactList';
+
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  addContact,
+  removeContact,
+  setFilter,
+} from '../redux/contacts/contactsSlice';
 
 export const App = () => {
   // state = {
@@ -10,103 +17,113 @@ export const App = () => {
   //   filter: '',
   // };
 
-////// Хук створення стану - useState
-const [contacts, setContacts] = useState([]);
-const [filter, setFilter] = useState('');
+  const dispatch = useDispatch();
+  const contacts = useSelector(state => state.contacts.contacts);
+  const filter = useSelector(state => state.contacts.filter);
 
-//////////////// Робота з локальним сховищем ( ДЛЯ ТРЕТЬОГО ДЗ)
+  ////// Хук створення стану - useState
+  // const [contacts, setContacts] = useState([]);
+  // const [filter, setFilter] = useState('');
 
-// Функція перевірки локального сховища 
-const localStorageCheck = () => { 
-  const savedContacts = localStorage.getItem('contacts');
-  // console.log(savedContacts)
-  return JSON.parse(savedContacts) || null;
-}
+  //////////////// Робота з локальним сховищем ( ДЛЯ ТРЕТЬОГО ДЗ)
 
-// Функція додавання до локального сховища контакт (оновлення)
-const localStorageAdd = (contactsArray) => {
-  // const newContactsList = [...contactsArray, newContact]
-  localStorage.setItem('contacts', JSON.stringify(contactsArray))
-}
+  // Функція перевірки локального сховища
+  // const localStorageCheck = () => {
+  //   const savedContacts = localStorage.getItem('contacts');
+  //   // console.log(savedContacts)
+  //   return JSON.parse(savedContacts) || null;
+  // }
 
-/////////////////// ЖИТТЄВИЙ ЦИКЛ ///////////////////
-// Типу DidMount (одноразка)
-useEffect(() => {
-  const savedLSContacts = localStorageCheck();
+  // Функція додавання до локального сховища контакт (оновлення)
+  // const localStorageAdd = contactsArray => {
+  //   // const newContactsList = [...contactsArray, newContact]
+  //   localStorage.setItem('contacts', JSON.stringify(contactsArray));
+  // };
 
-  if (savedLSContacts === null) {
-    return 
-  } else { 
-       setContacts(savedLSContacts);
-  }
-  
-}, [])
+  /////////////////// ЖИТТЄВИЙ ЦИКЛ ///////////////////
+  // Типу DidMount (одноразка)
+  // useEffect(() => {
+  //   const savedLSContacts = localStorageCheck();
 
+  //   if (savedLSContacts === null) {
+  //     return
+  //   } else {
+  //        setContacts(savedLSContacts);
+  //   }
 
-// Типу DidUpdate
-useEffect(() => {
-      localStorageAdd(contacts); 
-   
- 
-  if (contacts.length < 1){
-    localStorage.removeItem('contacts')
-  }
+  // }, [])
 
-}, [contacts])
+  // Типу DidUpdate
+  // useEffect(() => {
+  //       localStorageAdd(contacts);
 
+  //   if (contacts.length < 1){
+  //     localStorage.removeItem('contacts')
+  //   }
+
+  // }, [contacts])
 
   //Функція для отрмання даних при додаванні нового контакту (ф-цію передаємо як пропс в ContactForm, a з потім з пропсу в локальному компоненті через колбек витягуємо дані назад )
-  const handlerAddContact = (formData) => {
+  const handlerAddContact = formData => {
     // console.log(formData);
-    if (contacts.some(contact => contact.name.trim().toLowerCase() === formData.name.trim().toLowerCase())) {
+    if (
+      contacts.some(
+        contact =>
+          contact.name.trim().toLowerCase() ===
+          formData.name.trim().toLowerCase()
+      )
+    ) {
       alert(`${formData.name} is already in your contacts`);
     } else {
-      setContacts([...contacts, formData]
-      );
+      // setContacts([...contacts, formData]
+      // );
+      const action = addContact(formData);
+      dispatch(action);
     }
   };
 
   // Функція фільтрації
-  const handlerChangeFilter = (filterValue) => {
-    setFilter(filterValue);
-
+  const handlerChangeFilter = filterValue => {
+    // setFilter(filterValue);
+    const action = setFilter(filterValue);
+    dispatch(action);
   };
 
   //Функція видалення кнопки
-  const contactBtnDeleter = (id) => {
-    setContacts(contacts.filter(contact => contact.id !== id));
+  const contactBtnDeleter = id => {
+    // setContacts(contacts.filter(contact => contact.id !== id));
+    const action = removeContact(id);
+    dispatch(action);
   };
 
-  
-    const filteredContact = contacts.filter(contact =>
-      contact.name.trim().toLowerCase().includes(filter)
-    );
+  const filteredContact = contacts.filter(contact =>
+    contact.name.trim().toLowerCase().includes(filter)
+  );
 
-    return (
-      <div
-        style={{
-          // height: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          fontSize: 40,
-          color: '#010101',
-        }}
-      >
-        <h1>Phonebook</h1>
-        <ContactForm handlerAddContact={handlerAddContact} />
+  return (
+    <div
+      style={{
+        // height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: 40,
+        color: '#010101',
+      }}
+    >
+      <h1>Phonebook</h1>
+      <ContactForm handlerAddContact={handlerAddContact} />
 
-        <h2>Contacts</h2>
-        <Filter
-          contactsArray={contacts}
-          handlerChangeFilter={handlerChangeFilter}
-        />
-        <ContactList
-          contactsArray={filteredContact}
-          contactBtnDeleter={contactBtnDeleter}
-        />
-      </div>
-    );
-  
-}
+      <h2>Contacts</h2>
+      <Filter
+        contactsArray={contacts}
+        handlerChangeFilter={handlerChangeFilter}
+      />
+      <ContactList
+        contactsArray={filteredContact}
+        contactBtnDeleter={contactBtnDeleter}
+      />
+    </div>
+  );
+};
